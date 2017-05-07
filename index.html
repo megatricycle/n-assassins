@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="/css/style.css" />
+        <title>N-Assassins</title>
+    </head>
+
+    <body>
+        <div id="page-container" class="ui-overlay">
+            <div id="menu-page" class="flex-page page">
+                <p class="game-title header">N-Assassins</p>
+                <button id="start-btn" class="btn">Start</button>
+            </div>
+            <div id="input-n-page" class="flex-page page">
+                <p class="how-big header">How big is the board?</p>
+                <input type="text" id="n-input" class="input n-input" placeholder="N"/>
+                <button class="btn">Continue</button>
+            </div>
+        </div>
+        <div class="scene-container">
+            <canvas id="scene"></canvas>
+        </div>
+        <script src="/js/babylon.custom.min.js"></script>
+        <script src="/js/app.js"></script>
+    </body>
+</html>
