@@ -133,6 +133,10 @@ class App {
 
         if (shouldControl) {
             this.camera.attachControl(canvas, false, true);
+            console.log(this.camera);
+            this.camera.upperBetaLimit = 1.2;
+            this.camera.lowerRadiusLimit = 5;
+            this.camera.upperRadiusLimit = this.camera.radius * 2;
         }
     }
 
