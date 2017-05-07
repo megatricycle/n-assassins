@@ -19,6 +19,7 @@ class App {
         this.toggleAssassin = this.toggleAssassin.bind(this);
         this.fetchAssassinModel = this.fetchAssassinModel.bind(this);
         this.clearMenuAssassins = this.clearMenuAssassins.bind(this);
+        this.clearInitialBoard = this.clearInitialBoard.bind(this);
     }
 
     fetchAssassinModel() {
@@ -133,7 +134,6 @@ class App {
 
         if (shouldControl) {
             this.camera.attachControl(canvas, false, true);
-            console.log(this.camera);
             this.camera.upperBetaLimit = 1.2;
             this.camera.lowerRadiusLimit = 5;
             this.camera.upperRadiusLimit = this.camera.radius * 2;
@@ -176,9 +176,15 @@ class App {
     }
 
     clearInitialBoard() {
-        for(let i = 0; i < this.initialBoard.length; i++) {
-            this.initialBoard[i].dispose();
-        }
+        const { disposeAssassin } = this;
+
+        this.initialBoard.forEach(cell => {
+            if(cell.metadata.assassin) {
+                cell.metadata.assassin = disposeAssassin(cell.metadata.assassin);
+            }
+
+            cell.dispose();
+        });
 
         this.initialBoard = [];
     }
@@ -229,7 +235,7 @@ class App {
     }
 
     setPage(page) {
-        const { setCamera, renderInitialBoard, focusBoard, clearMenuAssassins } = this;
+        const { setCamera, renderInitialBoard, focusBoard, clearMenuAssassins, clearInitialBoard, renderMenu } = this;
 
         const pageRootElement = document.getElementById('page-container');
 
@@ -260,6 +266,9 @@ class App {
             clearMenuAssassins();
         }
         else if(page === 'initial-placement') {
+            const initialPlacementOverlay = document.getElementById('initial-placement-page');
+            initialPlacementOverlay.style.display = 'flex';
+
             const { n } = this;
 
             focusBoard(this.initialBoard);
@@ -269,6 +278,12 @@ class App {
                 new BABYLON.Vector3(-100, 0, -12),
                 true
             );
+        }
+        else if(page === 'solving') {
+            const solvingOverlay = document.getElementById('solving-page');
+            solvingOverlay.style.display = 'flex';
+
+            clearInitialBoard();
         }
     }
 
@@ -346,6 +361,12 @@ const nInputBtn = document.getElementById('n-input-btn');
 
 nInputBtn.onclick = () => {
     AppInstance.setPage('initial-placement');
+};
+
+const solveBtn = document.getElementById('solve-btn');
+
+solveBtn.onclick = () => {
+    AppInstance.setPage('solving');
 };
 
 window.addEventListener('click', (e) => {
