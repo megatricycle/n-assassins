@@ -387,6 +387,8 @@ class App {
         const center = (N - 1) / 2;
 
         solutions.forEach((solution, index) => {
+            if(index >= 50) return;
+
             const i = Math.floor(index / N);
             const j = index % N;
 
