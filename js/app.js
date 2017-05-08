@@ -1,22 +1,24 @@
 /*
     @TODO:
-        Set initial assassins as state
         Generate actual solution
 */
 
 class App {
     constructor() {
+        // this is where we set some class wide attributes
         this.canvas = document.getElementById('scene');
         this.engine = new BABYLON.Engine(this.canvas, true);
         this.menuAssassins = [];
-        this.initialBoard = [];
-        this.solutions = [];
-        this.solutionBoards = [];
+        this.initialBoard = []; // 3d models
+        this.initialBoardState = []; // data representation of placement board
+        this.solutions = []; // save the solutions solved here
+        this.solutionBoards = []; // save the solutions board here, not the actual solutions from our algo
         this.n = 0;
         this.state = 'menu';
         this.assassinMesh = null;
-        this.solutionIndex = 0;
+        this.solutionIndex = 0; // current solution being seen by user
 
+        // if your methods need access to the class, bind it here
         this.createAssassin = this.createAssassin.bind(this);
         this.setCamera = this.setCamera.bind(this);
         this.setLight = this.setLight.bind(this);
@@ -37,8 +39,11 @@ class App {
         this.backSolution = this.backSolution.bind(this);
         this.nextSolution = this.nextSolution.bind(this);
         this.clearSolutions = this.clearSolutions.bind(this);
+        this.solve = this.solve.bind(this);
+        this.initializePlacementBoard = this.initializePlacementBoard.bind(this);
     }
 
+    // fetches the 3d model from server (or file system) and saves it on assassinMesh, this will be used for generating assassin models
     fetchAssassinModel() {
         const { scene } = this;
 
@@ -51,14 +56,19 @@ class App {
                 (newMeshes, particleSystems, skeletons) => {
                     newMeshes.forEach((mesh) => {
                         if(mesh.material) {
+                            // make it unpickable
                             mesh.isPickable = false;
+
+                            // remove the texture
                             mesh.material.dispose();
                             mesh.material = null;
                         }
 
+                        // hide the original model loaded fom server
                         mesh.visibility = false;
                     });
 
+                    // save to assassinMesh
                     this.assassinMesh = newMeshes[0].clone();
 
                     resolve(newMeshes);
@@ -68,6 +78,7 @@ class App {
         
     }
 
+    // the very start of our 3d world
     initializeScene() {
         const {
             canvas,
@@ -97,12 +108,14 @@ class App {
                 // render first screen
                 setPage('menu');
 
+                // run the render loop
                 engine.runRenderLoop(function() {
                     scene.render();
                 });
             });
     }
 
+    // creates an assassin model on a BABYLON.Vector3
     createAssassin(pos) {
         const { scene, assassinMesh } = this;
 
@@ -127,6 +140,7 @@ class App {
         return assassin;
     }
 
+    // sets the camera from pos (Vector3) looking at look (Vector3). shouldControl should be set to true if we want to make the camera movable
     setCamera(pos, look, shouldControl) {
         let { camera, scene, canvas } = this;
 
@@ -153,6 +167,7 @@ class App {
         }
     }
 
+    // sets up lighting
     setLight() {
         const { scene } = this;
 
@@ -172,6 +187,7 @@ class App {
         this.light.intensity = 0.7;
     }
 
+    // render the 3 assassins at menu
     renderMenu() {
         const { createAssassin, menuAssassins } = this;
 
@@ -180,6 +196,7 @@ class App {
         menuAssassins.push(createAssassin(new BABYLON.Vector3(1.3, 0, 1)));
     }
 
+    // removes menu assassins as to not be seen in other pages
     clearMenuAssassins() {
         this.menuAssassins.forEach(assassin => {
             assassin.dispose();
@@ -188,6 +205,7 @@ class App {
         this.menuAssassins = [];
     }
 
+    // removes the "placement board"
     clearInitialBoard() {
         const { disposeAssassin } = this;
 
@@ -202,6 +220,7 @@ class App {
         this.initialBoard = [];
     }
 
+    // renders a nxn board given a pos. Assassins[{i, j}] state the board coordinates if it has an assassin inside. alpha for opacity
     renderBoard(pos, n, assassins, alpha) {
         const { scene, generateBoardCoodinates, createAssassin } = this;
 
@@ -222,7 +241,8 @@ class App {
                 );
                 board.metadata = {
                     type: 'board',
-                    assassin: null
+                    assassin: null,
+                    index: { i, j }
                 };
 
                 board.material.alpha = alpha;
@@ -256,6 +276,7 @@ class App {
         return boards;
     }
 
+    // render nxn placement board
     renderInitialBoard(n) {
         const { clearInitialBoard, setCamera, renderBoard } = this;
 
@@ -269,9 +290,11 @@ class App {
         );
     }
 
+    // sets the page
     setPage(page) {
         const { setCamera, renderInitialBoard, focusBoard, clearMenuAssassins, clearInitialBoard, renderMenu } = this;
 
+        // hide all ui overlay elements
         const pageRootElement = document.getElementById('page-container');
 
         Array.from(pageRootElement.children).forEach(page => {
@@ -321,60 +344,11 @@ class App {
             solvingOverlay.style.display = 'flex';
 
             clearInitialBoard();
-
-            setTimeout(() => {
-                // generate solving code here
-                
-                this.solutions = [
-                    [
-                        [1, 0 , 0, 0],
-                        [0, 1 , 0, 0],
-                        [0, 0 , 1, 0],
-                        [0, 0 , 0, 1]
-                    ],
-                    [
-                        [1, 0 , 0, 0],
-                        [0, 0 , 0, 1],
-                        [0, 0 , 1, 0],
-                        [0, 1 , 0, 0]
-                    ],
-                    [
-                        [0, 1 , 0, 0],
-                        [1, 0 , 0, 0],
-                        [0, 0 , 0, 1],
-                        [0, 0 , 1, 0]
-                    ],
-                    [
-                        [0, 1 , 0, 0],
-                        [0, 0 , 1, 0],
-                        [0, 0 , 0, 1],
-                        [1, 0 , 0, 0]
-                    ],
-                    [
-                        [0, 0 , 1, 0],
-                        [0, 1 , 0, 0],
-                        [1, 0 , 1, 0],
-                        [0, 0 , 0, 1]
-                    ],
-                    [
-                        [0, 0 , 1, 0],
-                        [0, 0 , 0, 1],
-                        [1, 0 , 0, 0],
-                        [0, 1 , 0, 0]
-                    ],
-                    [
-                        [0, 0 , 0, 1],
-                        [1, 0 , 0, 0],
-                        [0, 1 , 0, 0],
-                        [0, 0 , 1, 0]
-                    ],
-                    [
-                        [0, 0 , 0, 1],
-                        [0, 0 , 1, 0],
-                        [0, 1 , 0, 0],
-                        [1, 0 , 0, 0]
-                    ]
-                ];
+        
+            // generate solving code here
+            // for now let's mock it up using setTimeout
+            setTimeout(() => {                
+                this.solutions = this.solve();
 
                 if(this.solutions.length) {
                     this.solutionIndex = 0;
@@ -546,6 +520,11 @@ class App {
                 new BABYLON.Vector3(mesh.position.x, mesh.position.y + 0.2, mesh.position.z)
             );
         }
+
+        const { i, j } = mesh.metadata.index;
+
+        console.log(this.initialBoardState);
+        this.initialBoardState[i][j] = this.initialBoardState[i][j] === 0 ? 1 : 0;
     }
 
     disposeAssassin(assassin) {
@@ -624,6 +603,82 @@ class App {
         this.solutionBoards = [];
         this.solutionIndex = 0;
     }
+
+    initializePlacementBoard(n) {
+        this.initialBoardState = [];
+
+        for(let i = 0; i < n; i++) {
+            this.initialBoardState[i] = [];
+
+            for(let j = 0; j < n; j++) {
+                this.initialBoardState[i][j] = 0;
+            }
+        }
+    }
+
+    // put all your solving algo here
+    // should return an array of board solutions
+    solve() {
+        // your initial board here and n
+        const { initialBoardState, n } = this;
+
+        console.log('I\'m solving this board:');
+        console.log(initialBoardState);
+
+        // put your code here mwah
+
+        // let's mock it up
+        return [
+            [
+                [1, 0 , 0, 0],
+                [0, 1 , 0, 0],
+                [0, 0 , 1, 0],
+                [0, 0 , 0, 1]
+            ],
+            [
+                [1, 0 , 0, 0],
+                [0, 0 , 0, 1],
+                [0, 0 , 1, 0],
+                [0, 1 , 0, 0]
+            ],
+            [
+                [0, 1 , 0, 0],
+                [1, 0 , 0, 0],
+                [0, 0 , 0, 1],
+                [0, 0 , 1, 0]
+            ],
+            [
+                [0, 1 , 0, 0],
+                [0, 0 , 1, 0],
+                [0, 0 , 0, 1],
+                [1, 0 , 0, 0]
+            ],
+            [
+                [0, 0 , 1, 0],
+                [0, 1 , 0, 0],
+                [1, 0 , 1, 0],
+                [0, 0 , 0, 1]
+            ],
+            [
+                [0, 0 , 1, 0],
+                [0, 0 , 0, 1],
+                [1, 0 , 0, 0],
+                [0, 1 , 0, 0]
+            ],
+            [
+                [0, 0 , 0, 1],
+                [1, 0 , 0, 0],
+                [0, 1 , 0, 0],
+                [0, 0 , 1, 0]
+            ],
+            [
+                [0, 0 , 0, 1],
+                [0, 0 , 1, 0],
+                [0, 1 , 0, 0],
+                [1, 0 , 0, 0]
+            ]
+        ];
+    }
 }
 
 const AppInstance = new App();
@@ -642,6 +697,7 @@ nInput.onkeyup = () => {
     const n = parseInt(nInput.value);
     AppInstance.renderInitialBoard(n);
     AppInstance.setN(n);
+    AppInstance.initializePlacementBoard(n);
 };
 
 const nInputBtn = document.getElementById('n-input-btn');
