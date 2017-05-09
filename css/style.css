@@ -80,3 +80,56 @@ html, body {
 .n-input {
     margin: 3em 0;
 }
+
+.place-assassins {
+    margin-bottom: 5em;
+}
+
+#solution-page {
+    justify-content: flex-end;
+}
+
+.lower-part {
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.left-part {
+    width: 30%;
+    display: flex;
+    flex-direction: column;
+    padding-left: 2em;
+    padding-bottom: 2em;
+    justify-content: center;
+    align-items: center;
+}
+
+.solution-navigator-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.solution-navigator {
+    font-style: bold;
+    color: #222222;
+    text-decoration: none;
+    font-size: 4em;
+    margin: 0 0.5em;
+    pointer-events: all;
+}
+
+.solution-text {
+    font-size: 1.5em;
+    text-align: center;
+}
+
+.right-part {
+    padding-right: 2em;
+    padding-bottom: 2em;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
