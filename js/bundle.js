@@ -1,3 +1,4 @@
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
     @TODO:
         Generate actual solution
@@ -702,3 +703,248 @@ window.addEventListener('click', (e) => {
         }
     }
 });
+
+},{"./helpers/solver":5}],2:[function(require,module,exports){
+const knight_flag = (board, row, col) => {
+    for (let i = 0; i < board.length; i += 1) {
+        for (let j = 0; j < board.length; j += 1) {
+            if (board[i][j]) {
+                let xval =  Math.pow(j - col, 2);
+                let yval =  Math.pow(i - row, 2);
+                let dist = Math.sqrt(xval + yval);
+
+                if (dist > 2.2 && dist < 2.3) return 1;
+            }
+        }
+    }
+
+    return 0;
+};
+
+module.exports = (board, row, col) => {
+    for (let i = 0; i < board.length; i += 1) {
+        if (knight_flag(board, row, col)) return 0;
+        if (board[i][col] && i != row) return 0;
+        if (board[row][i] && i != col) return 0;
+    }
+
+    return 1;
+}
+
+},{}],3:[function(require,module,exports){
+module.exports = {
+    data: (data) => {
+        return console.log(data);
+    },
+
+    board: (board) => {
+        let row = [];
+
+        for (let i = 0; i < board.length; i += 1) {
+            row.push('');
+        }
+
+        for (let x = 0; x < board.length; x += 1) {
+            for (let y = 0; y < board.length; y += 1) {
+                if (board[x][y]) row[x] += '1 ';
+                else row[x] += '0 ';
+            }
+            console.log(row[x]);
+        }
+    },
+
+    stack: (stack) => {
+        let data = 'Stack: ';
+
+        for (let x = 0; x < stack.tos; x += 1) {
+            data += stack.val[x] + ' ';
+        }
+        console.log(data);
+    }
+}
+
+},{}],4:[function(require,module,exports){
+
+},{}],5:[function(require,module,exports){
+const print = require('./printer');
+const check = require('./checker');
+const stacker = require('./stacker');
+
+module.exports = (board) => {
+    let solutions = [];
+    let num_of_sol = 0;
+    let sos; // start of stack
+    let curr_row = 0;
+    let curr_col = 0;
+    let flag;
+
+    let lookup = stacker([board]);
+    let stack = stacker([lookup.val, -1]);
+
+    sos = stack.tos;
+
+    if (stack.tos === -1) {
+        print.data('The number of solutions are ' + num_of_sol);
+        return solutions;
+    }
+
+    for (let i = 0; i < board.length; i += 1) {
+        let exit = 0;
+
+        for (let j = 0; j < board.length; j += 1) {
+            let check_flag = check(board, i, j);
+            let elem_flag = board[i][j] != 1;
+
+            if (check_flag && elem_flag) {
+                curr_row = i;
+                curr_col = j;
+                exit = 1;
+                stack.tos = i;
+                break;
+            }
+        }
+
+        if (exit) break;
+    }
+
+    stack.push(board, curr_col);
+    curr_row += 1;
+    curr_col = 0;
+
+    while (true) {
+        flag = 0;
+
+        for (; curr_col < board.length; curr_col += 1) {
+            if (lookup.val[curr_row] === curr_col) {
+                stack.tos += 1;
+                curr_col = 0;
+                curr_row += 1;
+                flag = 1;
+                break;
+            }
+
+            let no_overflow_flag = curr_row < board.length && curr_col < board.length;
+            let valid_flag = check(board, curr_row, curr_col);
+            // print.data(valid_flag);
+            if (no_overflow_flag && valid_flag) {
+                stack.push(board, curr_col);
+                curr_col = 0;
+                curr_row += 1;
+                flag = 1;
+                break;
+            }
+        }
+
+        if (!flag) {
+            if (stack.tos === sos) {
+                break;
+            }
+
+            if (stack.tos > sos) {
+                curr_col = stack.pop(board, lookup.val, curr_row);
+                curr_col += 1;
+                curr_row -= 1;
+            }
+        }
+
+        if (stack.tos === board.length) {
+            solutions[num_of_sol++] = board;
+
+            print.board(board);
+            print.data('');
+
+            // for (let x = 0; x < board.length; x += 1) {
+            //     for (let y = 0; y < board.length; y += 1) {
+            //         console.log(board[x][y]);
+            //     }
+            // }
+
+            curr_col = stack.pop(board, lookup.val, curr_row);
+            curr_col += 1;
+            curr_row -= 1;
+        }
+    }
+
+    print.data('The number of solutions are ' + num_of_sol);
+    return solutions;
+};
+
+},{"./checker":2,"./printer":3,"./stacker":6}],6:[function(require,module,exports){
+let ChancyStack = class {
+    constructor (data) {
+        // if empty
+        if (data.length) {
+            this.val = [];
+            this.size = 0;
+            this.tos = 0;
+        }
+
+        // if opt stack
+        if (data.length == 2) {
+            let lookup = data[0];
+            let flag = 0;
+
+            this.tos = data[1];
+            this.val = [];
+
+            for (let i = 0; i < lookup.length; i += 1) {
+                let elem = lookup[i];
+                let index = i;
+
+                this.val[i] = elem;
+                if (elem === -1 && !flag) {
+                    this.tos = index;
+                    flag = 1;
+                }
+            }
+        }
+
+        // if lookup stack
+        if (data.length == 1) {
+            let board = data[0];
+
+            this.val = [];
+
+            for (let i = 0; i < board.length; i += 1) {
+                for (let j = 0; j < board.length; j += 1) {
+                    if (board[i][j]) {
+                        this.val[i] = j;
+                        break;
+                    } else this.val[i] = -1;
+                }
+            }
+        }
+    }
+
+    push (board, x) {
+        board[this.tos][x] = 1;
+        this.val[this.tos++] = x;
+        require('./printer').data('\nPUSH');
+        require('./printer').board(board);
+        require('./printer').data('');
+    }
+
+    pop (board, lookup, curr_row) {
+        this.tos -= 1;
+
+        while (lookup[this.tos] > -1) {
+            this.tos -= 1;
+            curr_row -= 1;
+        }
+
+        let col = this.val[this.tos];
+        board[this.tos][col] = 0;
+
+        require('./printer').data('\nPULL');
+        require('./printer').board(board);
+        require('./printer').data('');
+
+        return col;
+    }
+}
+
+module.exports = (data) => {
+    return new ChancyStack(data);
+}
+
+},{"./printer":3}]},{},[1,2,3,4,5,6]);
