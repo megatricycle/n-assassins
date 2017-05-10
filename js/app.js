@@ -1,8 +1,5 @@
-/*
-    @TODO:
-        Generate actual solution
-*/
-const solver = require('./helpers/solver');
+// const solver = require('./helpers/solver');
+const solver = require('./solver2');
 
 class App {
     constructor() {
@@ -620,19 +617,15 @@ class App {
         }
     }
 
-    // put all your solving algo here
-    // should return an array of board solutions
+    //this is where the solving algorithm (backtracking) happens
     solve() {
-        // your initial board here and n
+        // initial board here and n
         const { initialBoardState, n } = this;
 
         console.log('I\'m solving this board:');
         console.log(initialBoardState);
 
-        let solutions = solver(initialBoardState);
-        console.log(solutions);
-
-        return solutions;
+        return solver(initialBoardState);
     }
 }
 

@@ -15,11 +15,12 @@ module.exports = (board) => {
 
     sos = stack.tos;
 
-    if (stack.tos === -1) {
+    if (stack.tos == -1) {
         print.data('The number of solutions are ' + num_of_sol);
         return solutions;
     }
 
+    // find initial value for stack
     for (let i = 0; i < board.length; i += 1) {
         let exit = 0;
 
@@ -36,7 +37,7 @@ module.exports = (board) => {
             }
         }
 
-        if (exit) break;
+        if (exit == 1) break;
     }
 
     stack.push(board, curr_col);
@@ -46,8 +47,9 @@ module.exports = (board) => {
     while (true) {
         flag = 0;
 
+        // check row for valid move
         for (; curr_col < board.length; curr_col += 1) {
-            if (lookup.val[curr_row] === curr_col) {
+            if (lookup.val[curr_row] == curr_col) {
                 stack.tos += 1;
                 curr_col = 0;
                 curr_row += 1;
@@ -56,7 +58,7 @@ module.exports = (board) => {
             }
 
             let no_overflow_flag = curr_row < board.length && curr_col < board.length;
-            let valid_flag = check(board, curr_row, curr_col);
+            let valid_flag = check(board, curr_row, curr_col) == 1;
             // print.data(valid_flag);
             if (no_overflow_flag && valid_flag) {
                 stack.push(board, curr_col);
@@ -67,10 +69,8 @@ module.exports = (board) => {
             }
         }
 
-        if (!flag) {
-            if (stack.tos === sos) {
-                break;
-            }
+        if (flag == 0) {
+            if (stack.tos == sos) break;
 
             if (stack.tos > sos) {
                 curr_col = stack.pop(board, lookup.val, curr_row);
@@ -79,17 +79,8 @@ module.exports = (board) => {
             }
         }
 
-        if (stack.tos === board.length) {
-            solutions[num_of_sol++] = board;
-
-            print.board(board);
-            print.data('');
-
-            // for (let x = 0; x < board.length; x += 1) {
-            //     for (let y = 0; y < board.length; y += 1) {
-            //         console.log(board[x][y]);
-            //     }
-            // }
+        if (stack.tos == board.length) {
+            solutions[num_of_sol++] = JSON.parse(JSON.stringify(board));
 
             curr_col = stack.pop(board, lookup.val, curr_row);
             curr_col += 1;
