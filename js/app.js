@@ -10,7 +10,7 @@ class App {
         this.initialBoard = []; // 3d models
         this.initialBoardState = []; // data representation of placement board
         this.solutions = []; // save the solutions solved here
-        this.solutionBoards = []; // save the solutions board here, not the actual solutions from our algo
+        this.solutionBoard = null; // save the solutions board here, not the actual solutions from our algo
         this.n = 0;
         this.state = 'menu';
         this.assassinMesh = null;
@@ -37,8 +37,10 @@ class App {
         this.backSolution = this.backSolution.bind(this);
         this.nextSolution = this.nextSolution.bind(this);
         this.clearSolutions = this.clearSolutions.bind(this);
+        this.clearSolutionBoard = this.clearSolutionBoard.bind(this);
         this.solve = this.solve.bind(this);
         this.initializePlacementBoard = this.initializePlacementBoard.bind(this);
+        this.showSolution = this.showSolution.bind(this);
 
     }
 
@@ -226,6 +228,8 @@ class App {
         let coordinates = generateBoardCoodinates(n, pos);
         let boards = [];
 
+        const timeStart = new Date();
+
         coordinates.forEach((row, i) => {
             row.forEach((pos, j) => {
                 let board = BABYLON.Mesh.CreateBox('box' + pos.x + pos.z, 2, scene, false);
@@ -271,6 +275,12 @@ class App {
                 boards.push(board);
             });
         });
+
+        const timeEnd = new Date();
+
+        const diff = (timeEnd - timeStart) / 1000;
+
+        console.log(diff);
 
         return boards;
     }
@@ -365,8 +375,40 @@ class App {
         }
     }
 
+    showSolution(index, updateCamera) {
+        const { clearSolutionBoard, focusSolution, solutions, renderBoard } = this;
+
+        const solution = solutions[index];
+
+        clearSolutionBoard();
+
+        const base = new BABYLON.Vector3(0, 0 , 0);
+
+        // check for assassins
+        const assassins = [];
+
+        solution.forEach((row, i) => {
+            row.forEach((cell, j) => {
+                if(cell === 1) {
+                    assassins.push({ i, j });
+                }
+            });
+        });
+
+        const board = renderBoard(base, solution.length, assassins, 1);
+
+        this.solutionBoard = {
+            origin: base,
+            board
+        };
+
+        if(updateCamera) {
+            focusSolution();
+        }
+    }
+
     renderSolutions() {
-        const { solutions, renderBoard } = this;
+        const { showSolution, solutions, renderBoard } = this;
 
         const solutionText = document.getElementById('solution-text');
         const backSolution = document.getElementById('back-solution');
@@ -392,47 +434,14 @@ class App {
             return;
         }
 
-        const N = Math.ceil(Math.sqrt(solutions.length));
-        const center = (N - 1) / 2;
-
-        solutions.forEach((solution, index) => {
-            if(index >= 50) return;
-
-            const i = Math.floor(index / N);
-            const j = index % N;
-
-            const base = new BABYLON.Vector3(0, 0 , 0);
-
-            const pos = new BABYLON.Vector3(
-                base.x - ((N * 2 + 10) * (center - j)),
-                base.y,
-                base.z - ((N * 2 + 10) * (center - i))
-            );
-
-            // check for assassins
-            const assassins = [];
-
-            solution.forEach((row, i) => {
-                row.forEach((cell, j) => {
-                    if(cell === 1) {
-                        assassins.push({ i, j });
-                    }
-                });
-            });
-
-            const board = renderBoard(pos, solution.length, assassins, 0.3);
-
-            this.solutionBoards.push({
-                origin: pos,
-                board
-            });
-        });
+        showSolution(0, true);
     }
 
     focusBoard(board) {
         const { focusAssassin } = this;
 
         board.forEach(mesh => {
+            mesh.visibility = true;
             mesh.material.alpha = 1;
 
             if(mesh.metadata.assassin) {
@@ -442,10 +451,15 @@ class App {
     }
 
     blurBoard(board) {
-        const { blurAssassin } = this;
+        const { blurAssassin, solutions } = this;
 
         board.forEach(mesh => {
-            mesh.material.alpha = 0.2;
+            if(solutions.length > 50) {
+                mesh.visibility = false;
+            }
+            else {
+                mesh.material.alpha = 0.2;
+            }
 
             if(mesh.metadata.assassin) {
                 blurAssassin(mesh.metadata.assassin);
@@ -471,24 +485,15 @@ class App {
         });
     }
 
-    focusSolution(index) {
-        const solution = this.solutionBoards[index];
+    focusSolution() {
+        const solution = this.solutionBoard;
         const N = solution.board.length;
         const pos = solution.origin;
 
         const { focusBoard, blurBoard, setCamera } = this;
 
-        this.solutionBoards.forEach((solution, i) => {
-            if(i == index) {
-                focusBoard(solution.board);
-            }
-            else {
-                blurBoard(solution.board);
-            }
-        });
-
         setCamera(
-            new BABYLON.Vector3(pos.x, (N * 1), pos.z - (N * 0.5)),
+            new BABYLON.Vector3(pos.x, 10 + (N * 0.5), pos.z - (10 + (N * 0.5))),
             new BABYLON.Vector3(pos.x, pos.y , pos.z),
             true
         );
@@ -550,10 +555,10 @@ class App {
     }
 
     backSolution() {
-        const { focusSolution } = this;
+        const { showSolution } = this;
 
         if(this.solutionIndex > 0) {
-            focusSolution(--this.solutionIndex);
+            showSolution(--this.solutionIndex);
 
             const solutionText = document.getElementById('solution-text');
 
@@ -572,10 +577,10 @@ class App {
     }
 
     nextSolution() {
-        const { focusSolution } = this;
+        const { showSolution } = this;
 
-        if(this.solutionIndex < this.solutionBoards.length) {
-            focusSolution(++this.solutionIndex);
+        if(this.solutionIndex < this.solutions.length) {
+            showSolution(++this.solutionIndex);
 
             const solutionText = document.getElementById('solution-text');
 
@@ -593,24 +598,31 @@ class App {
         }
     }
 
+    clearSolutionBoard() {
+        if(!this.solutionBoard) {
+            return;
+        }
+
+        this.solutionBoard.board.forEach(cell => {
+            if(cell.metadata && cell.metadata.assassin) {
+                const children = cell.metadata.assassin.getChildMeshes(false);
+
+                children.forEach(child => {
+                        child.dispose();
+                });
+
+                cell.metadata.assassin.dispose();
+            }
+
+            cell.dispose();
+        });
+
+        this.solutionBoard = null;
+    }
+
     clearSolutions() {
         this.solutions = [];
-        this.solutionBoards.forEach(solution => {
-            solution.board.forEach(cell => {
-                if(cell.metadata && cell.metadata.assassin) {
-                    const children = cell.metadata.assassin.getChildMeshes(false);
-
-                    children.forEach(child => {
-                            child.dispose();
-                    });
-
-                    cell.metadata.assassin.dispose();
-                }
-
-                cell.dispose();
-            });
-        });
-        this.solutionBoards = [];
+        this.clearSolutionBoard();
         this.solutionIndex = 0;
     }
 
@@ -651,6 +663,7 @@ const nInput = document.getElementById('n-input');
 
 nInput.onkeyup = () => {
     const n = parseInt(nInput.value);
+
     AppInstance.renderInitialBoard(n);
     AppInstance.setN(n);
     AppInstance.initializePlacementBoard(n);
@@ -659,6 +672,12 @@ nInput.onkeyup = () => {
 const nInputBtn = document.getElementById('n-input-btn');
 
 nInputBtn.onclick = () => {
+    const n = parseInt(nInput.value);
+
+    if(isNaN(n)) {
+        return false;
+    }
+
     AppInstance.setPage('initial-placement');
     nInput.value = '';
 };
