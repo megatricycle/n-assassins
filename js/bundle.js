@@ -353,9 +353,10 @@ class App {
             setTimeout(() => {
                 this.solutions = this.solve();
 
+                this.solutionIndex = 0;
+                this.renderSolutions();
+
                 if(this.solutions.length) {
-                    this.solutionIndex = 0;
-                    this.renderSolutions();
                     this.focusSolution(this.solutionIndex);
                 }
 
@@ -378,12 +379,21 @@ class App {
         if(solutions.length > 0) {
             solutionText.innerText = '1/' + solutions.length + ' Solutions';
             backSolution.style.visibility = 'hidden';
-            nextSolution.style.visibility = 'visible';
+
+            if(solutions.length > 1) {
+                nextSolution.style.visibility = 'visible';
+            }
+            else {
+                nextSolution.style.visibility = 'hidden';
+            }
+            
         }
         else {
             solutionText.innerText = 'No Solutions';
             backSolution.style.visibility = 'hidden';
             nextSolution.style.visibility = 'hidden';
+
+            return;
         }
 
         const N = Math.ceil(Math.sqrt(solutions.length));
@@ -528,7 +538,6 @@ class App {
 
         const { i, j } = mesh.metadata.index;
 
-        console.log(this.initialBoardState);
         this.initialBoardState[i][j] = this.initialBoardState[i][j] === 0 ? 1 : 0;
     }
 
@@ -627,11 +636,7 @@ class App {
         // your initial board here and n
         const { initialBoardState, n } = this;
 
-        console.log('I\'m solving this board:');
-        console.log(initialBoardState);
-
         let solutions = solver(initialBoardState);
-        console.log(solutions);
 
         return solutions;
     }
@@ -784,7 +789,7 @@ module.exports = (board) => {
     sos = stack.tos;
 
     if (stack.tos === -1) {
-        print.data('The number of solutions are ' + num_of_sol);
+        // print.data('The number of solutions are ' + num_of_sol);
         return solutions;
     }
 
@@ -848,10 +853,10 @@ module.exports = (board) => {
         }
 
         if (stack.tos === board.length) {
-            solutions[num_of_sol++] = board;
+            solutions[num_of_sol++] = JSON.parse(JSON.stringify(board));
 
-            print.board(board);
-            print.data('');
+            // print.board(board);
+            // print.data('');
 
             // for (let x = 0; x < board.length; x += 1) {
             //     for (let y = 0; y < board.length; y += 1) {

@@ -16,7 +16,7 @@ module.exports = (board) => {
     sos = stack.tos;
 
     if (stack.tos === -1) {
-        print.data('The number of solutions are ' + num_of_sol);
+        // print.data('The number of solutions are ' + num_of_sol);
         return solutions;
     }
 
@@ -80,10 +80,10 @@ module.exports = (board) => {
         }
 
         if (stack.tos === board.length) {
-            solutions[num_of_sol++] = board;
+            solutions[num_of_sol++] = JSON.parse(JSON.stringify(board));
 
-            print.board(board);
-            print.data('');
+            // print.board(board);
+            // print.data('');
 
             // for (let x = 0; x < board.length; x += 1) {
             //     for (let y = 0; y < board.length; y += 1) {
