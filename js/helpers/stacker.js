@@ -20,7 +20,7 @@ let ChancyStack = class {
                 let index = i;
 
                 this.val[i] = elem;
-                if (elem === -1 && !flag) {
+                if (elem == -1 && flag == 0) {
                     this.tos = index;
                     flag = 1;
                 }
@@ -37,8 +37,10 @@ let ChancyStack = class {
                 for (let j = 0; j < board.length; j += 1) {
                     if (board[i][j]) {
                         this.val[i] = j;
+                        // lookup[i] = j;
                         break;
                     } else this.val[i] = -1;
+                  // } else lookup[i] = -1;
                 }
             }
         }
