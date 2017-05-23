@@ -4,6 +4,3 @@
    "build": "browserify js/app.js js/helpers/* -o js/bundle.js && lite-server"
  }
 }
-
-/*npm run build - for production*/
-/*npm run watch - for development*/
