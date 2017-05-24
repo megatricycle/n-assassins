@@ -1,4 +1,11 @@
 {
+  "name": "n-assasins",
+  "version": "0.0.0",
+  "authors": [
+    "Peter Bernard Rupa",
+    "Mike Edward Serato",
+    "Almer Mendoza"
+  ],
   "scripts": {
     "watch": "watchify js/app.js js/helpers/* -o js/bundle.js -v",
     "build": "browserify js/app.js js/helpers/* -o js/bundle.js",

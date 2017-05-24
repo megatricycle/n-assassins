@@ -51,5 +51,5 @@ npm start
 ## Authors
 
 - Peter Bernard Rupa
-- Mike Serato
+- Mike Edward Serato
 - Almer Mendoza
