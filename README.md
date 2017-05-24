@@ -1,6 +1,8 @@
 # N-Assasins
 
-A requirement for CMSC 142
+N-Assasins is a spin-off to the N-Chancellors problem. It is similar to the N-Queens problem but instead of having pieces that holds the characteristics of a queen, the pieces are both a rook and a knight. 
+
+The application uses a one-dimensional backtracking algorithm.
 
 ## Requirements
 
@@ -53,3 +55,5 @@ npm start
 - Peter Bernard Rupa
 - Mike Edward Serato
 - Almer Mendoza
+
+CMSC 142 Undergrad Project @ ICS UPLB
