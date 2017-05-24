@@ -3,7 +3,7 @@
     "watch": "watchify js/app.js js/helpers/* -o js/bundle.js -v",
     "build": "browserify js/app.js js/helpers/* -o js/bundle.js",
     "server": "lite-server",
-    "start": "concurrently --kill-others \"npm run watch\" \"npm run server\""
+    "start": "npm run build && concurrently --kill-others \"npm run watch\" \"npm run server\""
   },
   "dependencies": {
     "concurrently": "^3.4.0",
