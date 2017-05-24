@@ -15,7 +15,7 @@ Start by installing browserify, watchify and lite-server.
 npm install
 ```
 
-## How to run the project
+## Interacting with app
 
 ### To watch changes
 
@@ -41,7 +41,7 @@ npm run server
 npm start
 ```
 
-## Recommendation
+## Recommendations
 
 - Get input from file
 - Alert error pre-solver
