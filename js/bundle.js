@@ -1008,6 +1008,16 @@ module.exports = (board) => {
 
   for(let i = 0; i < board.length; i++) {
       for(let j = 0; j < board.length; j++) {
+        if(board[i][j] == 1) {
+          if(check(board, i, j) == 0) {
+            return solutions;
+          }
+        }
+      }
+  }
+
+  for(let i = 0; i < board.length; i++) {
+      for(let j = 0; j < board.length; j++) {
           if(board[i][j] == 1) {
               lookup[i] = j;
               break;
